@@ -1,0 +1,339 @@
+{
+    "visualId": "68f8871bc343d84d7f4a8249",
+    "_id": "68f8871bc343d84d7f4a8249",
+    "name": "Visual_1761117979",
+    "model": "vader",
+    "review_count": 15,
+    "result": {
+        "sentiment_distribution": {
+            "pos": 10,
+            "neg": 3,
+            "neu": 2,
+            "pos_percent": 66.67,
+            "neg_percent": 20.0,
+            "neu_percent": 13.33
+        },
+        "per_review_summary": [
+            {
+                "id": 1,
+                "text": "The product quality is excellent! I received exact...",
+                "sentiment": "pos",
+                "compound": 0.5719
+            },
+            {
+                "id": 2,
+                "text": "Delivery took too long. I waited almost 10 days ev...",
+                "sentiment": "neu",
+                "compound": 0.0
+            },
+            {
+                "id": 3,
+                "text": "Packaging was good, but the item was slightly dama...",
+                "sentiment": "pos",
+                "compound": 0.0754
+            },
+            {
+                "id": 4,
+                "text": "Customer service was very helpful and resolved my ...",
+                "sentiment": "pos",
+                "compound": 0.5423
+            },
+            {
+                "id": 5,
+                "text": "I love the design and build quality. Totally worth...",
+                "sentiment": "pos",
+                "compound": 0.7501
+            },
+            {
+                "id": 6,
+                "text": "The color was completely different from what I ord...",
+                "sentiment": "neu",
+                "compound": 0.0
+            },
+            {
+                "id": 7,
+                "text": "Average experience — not too bad, but nothing spec...",
+                "sentiment": "neg",
+                "compound": -0.6964
+            },
+            {
+                "id": 8,
+                "text": "The app interface is confusing and keeps crashing ...",
+                "sentiment": "neg",
+                "compound": -0.3182
+            },
+            {
+                "id": 9,
+                "text": "Super fast delivery! I got it the next day, impres...",
+                "sentiment": "pos",
+                "compound": 0.802
+            },
+            {
+                "id": 10,
+                "text": "Received a used product instead of a new one. Very...",
+                "sentiment": "neg",
+                "compound": -0.4767
+            },
+            {
+                "id": 11,
+                "text": "The sound quality is crystal clear, and battery li...",
+                "sentiment": "pos",
+                "compound": 0.7717
+            },
+            {
+                "id": 12,
+                "text": "Not satisfied. The material feels cheap and uncomf...",
+                "sentiment": "pos",
+                "compound": 0.0516
+            },
+            {
+                "id": 13,
+                "text": "Good value for money, but I wish it came with bett...",
+                "sentiment": "pos",
+                "compound": 0.872
+            },
+            {
+                "id": 14,
+                "text": "I had to contact support multiple times — they nev...",
+                "sentiment": "pos",
+                "compound": 0.4019
+            },
+            {
+                "id": 15,
+                "text": "Everything was perfect — delivery, packaging, prod...",
+                "sentiment": "pos",
+                "compound": 0.5719
+            }
+        ],
+        "aspect_sentiment": {
+            "delivery": {
+                "pos": 2,
+                "neu": 1,
+                "neg": 0
+            },
+            "quality": {
+                "pos": 5,
+                "neu": 0,
+                "neg": 1
+            },
+            "support": {
+                "pos": 2,
+                "neu": 0,
+                "neg": 0
+            },
+            "price": {
+                "pos": 3,
+                "neu": 0,
+                "neg": 0
+            },
+            "ux": {
+                "pos": 0,
+                "neu": 0,
+                "neg": 1
+            }
+        },
+        "top_issues": [
+            {
+                "keyword": "bad",
+                "count": 1,
+                "percent": 33.33
+            },
+            {
+                "keyword": "app",
+                "count": 1,
+                "percent": 33.33
+            },
+            {
+                "keyword": "interface",
+                "count": 1,
+                "percent": 33.33
+            }
+        ],
+        "suggestions": [
+            {
+                "aspect": "general",
+                "suggestion": "Maintain current performance.",
+                "priority": "low"
+            }
+        ],
+        "impact_score": 31.0,
+        "confidence_overview": {
+            "average": 0.2613,
+            "median": 0.4019,
+            "histogram": [
+                {
+                    "range": "-1.0 to -0.5",
+                    "count": 1
+                },
+                {
+                    "range": "-0.5 to 0.0",
+                    "count": 2
+                },
+                {
+                    "range": "0.0 to 0.5",
+                    "count": 5
+                },
+                {
+                    "range": "0.5 to 1.0",
+                    "count": 7
+                }
+            ]
+        },
+        "wordcloud_data": {
+            "positive": [
+                {
+                    "word": "quality",
+                    "count": 3
+                },
+                {
+                    "word": "excellent",
+                    "count": 1
+                },
+                {
+                    "word": "good",
+                    "count": 2
+                },
+                {
+                    "word": "service",
+                    "count": 1
+                },
+                {
+                    "word": "customer",
+                    "count": 1
+                },
+                {
+                    "word": "delivery",
+                    "count": 2
+                },
+                {
+                    "word": "fast",
+                    "count": 1
+                },
+                {
+                    "word": "cheap",
+                    "count": 1
+                },
+                {
+                    "word": "value",
+                    "count": 1
+                },
+                {
+                    "word": "support",
+                    "count": 1
+                },
+                {
+                    "word": "price",
+                    "count": 1
+                }
+            ],
+            "negative": [
+                {
+                    "word": "bad",
+                    "count": 1
+                },
+                {
+                    "word": "app",
+                    "count": 1
+                },
+                {
+                    "word": "interface",
+                    "count": 1
+                }
+            ]
+        },
+        "trend_over_time": [
+            {
+                "date": "2025-10-01",
+                "pos": 1,
+                "neg": 0,
+                "neu": 0
+            },
+            {
+                "date": "2025-10-02",
+                "pos": 0,
+                "neg": 0,
+                "neu": 1
+            },
+            {
+                "date": "2025-10-03",
+                "pos": 1,
+                "neg": 0,
+                "neu": 0
+            },
+            {
+                "date": "2025-10-04",
+                "pos": 1,
+                "neg": 0,
+                "neu": 0
+            },
+            {
+                "date": "2025-10-05",
+                "pos": 1,
+                "neg": 0,
+                "neu": 0
+            },
+            {
+                "date": "2025-10-06",
+                "pos": 0,
+                "neg": 0,
+                "neu": 1
+            },
+            {
+                "date": "2025-10-07",
+                "pos": 0,
+                "neg": 1,
+                "neu": 0
+            },
+            {
+                "date": "2025-10-08",
+                "pos": 0,
+                "neg": 1,
+                "neu": 0
+            },
+            {
+                "date": "2025-10-09",
+                "pos": 1,
+                "neg": 0,
+                "neu": 0
+            },
+            {
+                "date": "2025-10-10",
+                "pos": 0,
+                "neg": 1,
+                "neu": 0
+            },
+            {
+                "date": "2025-10-11",
+                "pos": 1,
+                "neg": 0,
+                "neu": 0
+            },
+            {
+                "date": "2025-10-12",
+                "pos": 1,
+                "neg": 0,
+                "neu": 0
+            },
+            {
+                "date": "2025-10-13",
+                "pos": 1,
+                "neg": 0,
+                "neu": 0
+            },
+            {
+                "date": "2025-10-14",
+                "pos": 1,
+                "neg": 0,
+                "neu": 0
+            },
+            {
+                "date": "2025-10-15",
+                "pos": 1,
+                "neg": 0,
+                "neu": 0
+            }
+        ],
+        "report_download": "UmV2aWV3IElELFRleHQsU2VudGltZW50LENvbXBvdW5kDQoxLFRoZSBwcm9kdWN0IHF1YWxpdHkgaXMgZXhjZWxsZW50ISBJIHJlY2VpdmVkIGV4YWN0Li4uLHBvcywwLjU3MTkNCjIsRGVsaXZlcnkgdG9vayB0b28gbG9uZy4gSSB3YWl0ZWQgYWxtb3N0IDEwIGRheXMgZXYuLi4sbmV1LDAuMA0KMywiUGFja2FnaW5nIHdhcyBnb29kLCBidXQgdGhlIGl0ZW0gd2FzIHNsaWdodGx5IGRhbWEuLi4iLHBvcywwLjA3NTQNCjQsQ3VzdG9tZXIgc2VydmljZSB3YXMgdmVyeSBoZWxwZnVsIGFuZCByZXNvbHZlZCBteSAuLi4scG9zLDAuNTQyMw0KNSxJIGxvdmUgdGhlIGRlc2lnbiBhbmQgYnVpbGQgcXVhbGl0eS4gVG90YWxseSB3b3J0aC4uLixwb3MsMC43NTAxDQo2LFRoZSBjb2xvciB3YXMgY29tcGxldGVseSBkaWZmZXJlbnQgZnJvbSB3aGF0IEkgb3JkLi4uLG5ldSwwLjANCjcsIkF2ZXJhZ2UgZXhwZXJpZW5jZSDigJQgbm90IHRvbyBiYWQsIGJ1dCBub3RoaW5nIHNwZWMuLi4iLG5lZywtMC42OTY0DQo4LFRoZSBhcHAgaW50ZXJmYWNlIGlzIGNvbmZ1c2luZyBhbmQga2VlcHMgY3Jhc2hpbmcgLi4uLG5lZywtMC4zMTgyDQo5LCJTdXBlciBmYXN0IGRlbGl2ZXJ5ISBJIGdvdCBpdCB0aGUgbmV4dCBkYXksIGltcHJlcy4uLiIscG9zLDAuODAyDQoxMCxSZWNlaXZlZCBhIHVzZWQgcHJvZHVjdCBpbnN0ZWFkIG9mIGEgbmV3IG9uZS4gVmVyeS4uLixuZWcsLTAuNDc2Nw0KMTEsIlRoZSBzb3VuZCBxdWFsaXR5IGlzIGNyeXN0YWwgY2xlYXIsIGFuZCBiYXR0ZXJ5IGxpLi4uIixwb3MsMC43NzE3DQoxMixOb3Qgc2F0aXNmaWVkLiBUaGUgbWF0ZXJpYWwgZmVlbHMgY2hlYXAgYW5kIHVuY29tZi4uLixwb3MsMC4wNTE2DQoxMywiR29vZCB2YWx1ZSBmb3IgbW9uZXksIGJ1dCBJIHdpc2ggaXQgY2FtZSB3aXRoIGJldHQuLi4iLHBvcywwLjg3Mg0KMTQsSSBoYWQgdG8gY29udGFjdCBzdXBwb3J0IG11bHRpcGxlIHRpbWVzIOKAlCB0aGV5IG5ldi4uLixwb3MsMC40MDE5DQoxNSwiRXZlcnl0aGluZyB3YXMgcGVyZmVjdCDigJQgZGVsaXZlcnksIHBhY2thZ2luZywgcHJvZC4uLiIscG9zLDAuNTcxOQ0K"
+    },
+    "created_at": "2025-10-22T07:26:19.668031+00:00"
+}

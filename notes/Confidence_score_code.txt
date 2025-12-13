@@ -1,0 +1,483 @@
+which lines to replace with what tell me in short 
+
+
+# ----------------- Helpers for suggestion ranking & AI-weighting -----------------
+def _safe_mean_abs(compound_scores):
+    try:
+        return float(np.mean(np.abs(np.array(compound_scores)))) if compound_scores else 0.0
+    except Exception:
+        return 0.0
+
+def _ai_weight_for_issue(issue_item, sentiment_distribution=None, compound_scores=None, aspect_sentiment=None):
+    """
+    Lightweight heuristic "AI-weight" combining:
+      - global negative intensity (neg_percent)
+      - volatility/strength of sentiment (avg abs compound)
+      - raw occurrence count
+      - aspect-specific severity if available
+    Returns a normalized 0-100 score.
+    """
+    neg_percent = 0.0
+    if sentiment_distribution:
+        neg_percent = float(sentiment_distribution.get("neg_percent", 0))
+    avg_abs = _safe_mean_abs(compound_scores)
+    count = float(issue_item.get("count", 0))
+
+    # Try to find aspect severity if aspect_sentiment contains a matching aspect key
+    aspect_severity = 0.0
+    key = issue_item.get("keyword", "").lower().replace(" ", "_")
+    if aspect_sentiment and key in aspect_sentiment:
+        asp = aspect_sentiment[key]
+        total = asp.get("pos", 0) + asp.get("neu", 0) + asp.get("neg", 0)
+        if total > 0:
+            aspect_severity = (asp.get("neg", 0) / total) * 100
+
+    # Heuristic combination
+    score = (neg_percent * 0.5) + (avg_abs * 50 * 0.4) + (min(50, count) * 0.6) + (aspect_severity * 0.3)
+    # normalize into 0-100
+    normalized = max(0.0, min(100.0, score))
+    return round(normalized, 2)
+
+
+# ----------------- Impact Scoring -----------------
+def compute_impact_score(sentiment_distribution, top_issues):
+    neg_percent = sentiment_distribution.get("neg_percent", 0)
+    issue_weight = len(top_issues) * 5
+    impact_score = min(100, round(neg_percent * 0.8 + issue_weight, 2))
+    return impact_score
+
+# ----------------- Suggestion Generator -----------------
+def generate_suggestions(top_issues, sentiment_distribution=None, compound_scores=None, aspect_sentiment=None, top_k=5):
+    """
+    Enhanced suggestion generator:
+      - enriches suggestions with root cause, action steps (from ADVANCED_SUGGESTION_DATA)
+      - computes dynamic impact_gain (base + data-driven adjustments)
+      - computes a lightweight AI-weight (heuristic)
+      - ranks suggestions by combined priority and impact
+      - returns top_k suggestions (default 5)
+    """
+    suggestions = []
+
+    # defensive
+    if not top_issues:
+        return [{
+            "aspect": "general",
+            "suggestion": "Maintain current performance.",
+            "priority": "low",
+            "weight_percent": 0,
+            "root_cause": "No major issues detected.",
+            "action_steps": [],
+            "impact_gain": 5,
+            "ai_weight": 0.0
+        }]
+
+    # compute denom for relative weighting
+    denom = float(sum([it.get("count", 0) for it in top_issues]) or 1)
+
+    for issue_item in top_issues:
+        kw = issue_item.get("keyword") or issue_item.get("issue") or "general"
+        percent = float(issue_item.get("percent", 0))
+        count = float(issue_item.get("count", 0))
+
+        # Base static suggestion text
+        base_sugg = SUGGESTION_MAP.get(kw, SUGGESTION_MAP.get(kw.lower(), "Investigate and improve this area."))
+
+        # find ADVANCED metadata by matching keys loosely (try exact then lower/underscore)
+        adv = ADVANCED_SUGGESTION_DATA.get(kw) \
+              or ADVANCED_SUGGESTION_DATA.get(kw.lower()) \
+              or ADVANCED_SUGGESTION_DATA.get(kw.replace(" ", "_").lower()) \
+              or {}
+
+        # base impact from advance data
+        base_gain = adv.get("impact_gain", 10)
+
+        # compute dynamic impact: base + severity contribution + frequency contribution
+        dynamic_gain = base_gain + (percent * 0.35) + (min(50, count) * 0.9)
+
+        # incorporate AI-weight heuristic (uses global context if provided)
+        ai_w = _ai_weight_for_issue(issue_item, sentiment_distribution=sentiment_distribution,
+                                    compound_scores=compound_scores, aspect_sentiment=aspect_sentiment)
+
+        # blend AI weight into final gain (tunable blend)
+        blended_gain = dynamic_gain * 0.6 + ai_w * 0.4
+
+        # cap
+        final_impact = int(max(0, min(100, round(blended_gain))))
+
+        # priority rule (tunable)
+        if percent >= 50 or final_impact >= 50 or count >= max(3, denom * 0.2):
+            priority = "high"
+        elif percent >= 25 or final_impact >= 30:
+            priority = "medium"
+        else:
+            priority = "low"
+
+        suggestion_obj = {
+            "aspect": kw,
+            "suggestion": base_sugg,
+            "priority": priority,
+            "weight_percent": percent,
+            "root_cause": adv.get("root_cause", "Not enough data."),
+            "action_steps": adv.get("action_steps", []),
+            "impact_gain": final_impact,
+            "ai_weight": ai_w,
+            # keep original metadata for UI if present
+            "count": count,
+            "keywords": issue_item.get("keywords", []),
+            "example": issue_item.get("example", "")
+        }
+
+        suggestions.append(suggestion_obj)
+
+    # ranking: primary by impact_gain desc, secondary by ai_weight desc, tertiary by percent desc
+    suggestions_sorted = sorted(suggestions, key=lambda s: (s["impact_gain"], s["ai_weight"], s.get("weight_percent", 0)), reverse=True)
+
+    # return top_k (keeps compatibility)
+    return suggestions_sorted[:top_k]
+
+
+# ----------------- Confidence Stats -----------------
+def compute_confidence_stats(compound_scores):
+    arr = np.array(compound_scores)
+    avg = round(np.mean(arr), 4)
+    median = round(np.median(arr), 4)
+    hist, bins = np.histogram(arr, bins=[-1, -0.5, 0, 0.5, 1])
+    histogram = [{"range": f"{round(bins[i],2)} to {round(bins[i+1],2)}", "count": int(hist[i])} for i in range(len(hist))]
+    return {"average": avg, "median": median, "histogram": histogram}
+
+# ----------------- Wordcloud -----------------
+def generate_wordcloud_data(reviews, sentiments):
+    pos_words, neg_words = [], []
+    all_keywords = set(sum(ASPECT_KEYWORDS.values(), []))
+    for review, sentiment in zip(reviews, sentiments):
+        words = set(clean_text(review).split())
+        matched = [w for w in words if w in all_keywords]
+        if sentiment == "pos":
+            pos_words.extend(matched)
+        elif sentiment == "neg":
+            neg_words.extend(matched)
+    pos_wc = [{"word": w, "count": c} for w, c in Counter(pos_words).items()]
+    neg_wc = [{"word": w, "count": c} for w, c in Counter(neg_words).items()]
+    return {"positive": pos_wc, "negative": neg_wc}
+
+# ----------------- Trend Analysis -----------------
+def compute_trends(reviews, timestamps=None, sentiments=None):
+    if timestamps is None:
+        return []
+
+    trend_counter = {}
+    if sentiments is None:
+        sentiments = ["neu"] * len(timestamps)
+
+    for ts, sentiment in zip(timestamps, sentiments):
+        ts = ts.strip().replace('"', '')
+        date = None
+        for fmt in ("%Y-%m-%d", "%d-%m-%Y"):
+            try:
+                date = datetime.strptime(ts, fmt).date()
+                break
+            except ValueError:
+                continue
+        if not date:
+            continue
+        if date not in trend_counter:
+            trend_counter[date] = {"pos": 0, "neg": 0, "neu": 0}
+        if sentiment not in ["pos", "neg", "neu"]:
+            sentiment = "neu"
+        trend_counter[date][sentiment] += 1
+
+
+    return [{"date": str(d), **counts} for d, counts in sorted(trend_counter.items())]
+
+# ----------------- VADER Analysis -----------------
+def analyze_reviews_vader(reviews, timestamps=None, cleaned_reviews=None, feedback_ids=None):
+    per_review_summary = []
+    sentiment_counts = {"pos": 0, "neu": 0, "neg": 0}
+    aspect_sentiment = {
+    aspect: {
+        "pos": 0,
+        "neu": 0,
+        "neg": 0,
+        "confidence": 0.0,
+        "severity_score": 0    } for aspect in ASPECT_KEYWORDS  }
+    negative_words = []
+    compound_scores = []
+    sentiments_list = []
+
+
+        # ensure feedback_ids is a list aligned with reviews (may be None)
+    if feedback_ids is None:
+        feedback_ids = [None] * len(reviews)
+
+
+    for idx, review in enumerate(reviews):
+        feedback_id = feedback_ids[idx] if idx < len(feedback_ids) else None
+        text = clean_text(review)
+        scores = vader_analyzer.polarity_scores(text)
+        compound = scores["compound"]
+        compound_scores.append(compound)
+
+        if compound >= 0.05:
+            sentiment = "pos"
+        elif compound <= -0.05:
+            sentiment = "neg"
+        else:
+            sentiment = "neu"
+        sentiments_list.append(sentiment)
+        sentiment_counts[sentiment] += 1
+
+        words = set(text.split())
+        for aspect, keywords in ASPECT_KEYWORDS.items():
+            for kw in keywords:
+                if kw in text:
+                    aspect_sentiment[aspect][sentiment] += 1
+                    break
+
+        if sentiment == "neg":
+            for w in words:
+                for cluster, kws in ISSUE_CLUSTERS.items():
+                    if w in kws:
+                        negative_words.append(cluster)
+        
+
+        per_review_summary.append({
+            "id": idx + 1,
+            "feedback_id": feedback_id,
+            "text": review[:50] + ("..." if len(review) > 50 else ""),
+            "sentiment": sentiment,
+            "compound": compound,
+            "confidence": round(abs(compound), 4)  # store abs compound as 'confidence'
+        })
+
+    total = len(reviews) if reviews else 1
+    sentiment_distribution = {
+        "pos": sentiment_counts["pos"],
+        "neg": sentiment_counts["neg"],
+        "neu": sentiment_counts["neu"],
+        "pos_percent": round(sentiment_counts["pos"] / total * 100, 2),
+        "neg_percent": round(sentiment_counts["neg"] / total * 100, 2),
+        "neu_percent": round(sentiment_counts["neu"] / total * 100, 2)
+    }
+
+    # compute severity = % negative for each aspect
+    for asp, stats in aspect_sentiment.items():
+        total = stats["pos"] + stats["neu"] + stats["neg"]
+        if total > 0:
+            stats["severity_score"] = int((stats["neg"] / total) * 100)
+        else:
+            stats["severity_score"] = 0
+    avg_abs_comp = float(np.mean(np.abs(np.array(compound_scores)))) if compound_scores else 0
+
+    for asp, stats in aspect_sentiment.items():
+        total = stats["pos"] + stats["neu"] + stats["neg"]
+        mention_factor = min(1.0, total / 3)
+        stats["confidence"] = round(0.5 * mention_factor + 0.5 * avg_abs_comp, 4)
+
+
+
+    top_issues_counter = Counter(negative_words)
+    total_negatives = sum(top_issues_counter.values()) or 1
+    top_issues = [
+        {"keyword": kw, "count": cnt, "percent": round((cnt / total_negatives) * 100, 2)}
+        for kw, cnt in top_issues_counter.most_common(TOP_N_ISSUES)
+    ]
+
+    denom = sum([it["count"] for it in top_issues]) or 1
+    for it in top_issues:
+        # human-friendly label (if cluster present it's already readable)
+        it["label"] = it.get("keyword", it.get("issue", "")).replace("_", " ").title()
+        # severity: % scaled 0-100
+        it["severity"] = int(round(it.get("percent", 0)))
+        # impact: simple weighted metric (tunable)
+        it["impact"] = round(it.get("percent", 0) * (1 + (it.get("count", 0) / max(1, denom))) , 2)
+        # representative keywords: pick top tokens belonging to this cluster
+        it["keywords"] = []
+        for cluster, kws in ISSUE_CLUSTERS.items():
+            if cluster == it["keyword"]:
+                it["keywords"] = kws[:4]
+                break
+        # example review: first review that contains any keyword from keywords list
+        it["example"] = "No sample available."
+        for rv in reviews:
+            rv_low = rv.lower()
+            for kw in it["keywords"]:
+                if kw in rv_low:
+                    it["example"] = (rv[:140] + "...") if len(rv) > 140 else rv
+                    break
+            if it["example"] != "No sample available.":
+                break
+        # small synthetic trend array (3 points) for UI sparklines - can be replaced with real timeseries later
+        it["trend"] = [max(0, round(it["percent"] * f, 2)) for f in [0.6, 0.9, 1.0]]
+
+    suggestions = generate_suggestions(top_issues,
+                                   sentiment_distribution=sentiment_distribution,
+                                   compound_scores=compound_scores,
+                                   aspect_sentiment=aspect_sentiment,
+                                   top_k=5)
+    impact_score = compute_impact_score(sentiment_distribution, top_issues)
+    confidence_overview = compute_confidence_stats(compound_scores)
+    wordcloud_data = generate_wordcloud_data(reviews, sentiments_list)
+    trend_over_time = compute_trends(reviews, timestamps, sentiments_list)
+
+        # prepare CSV with FeedbackID and global distribution included per-row
+    output_csv = io.StringIO()
+    writer = csv.writer(output_csv)
+    # Header: keep helpful fields and global distribution
+    writer.writerow([
+        "Review ID", "FeedbackID", "Text", "Sentiment", "Compound", "Confidence(%)",
+        "Pos% (global)", "Neg% (global)", "Neu% (global)"
+    ])
+
+    # For mapping cleaned_reviews (if provided) use them; else use original text snippets
+    cleaned_iter = cleaned_reviews if cleaned_reviews is not None else [r for r in reviews]
+
+    for rev, clean_text_value in zip(per_review_summary, cleaned_iter):
+        conf_pct = round(abs(rev.get("compound", 0)) * 100, 2)
+        writer.writerow([
+            rev.get("id"),
+            rev.get("feedback_id"),
+            (clean_text_value[:140] + "...") if len(clean_text_value) > 140 else clean_text_value,
+            rev.get("sentiment"),
+            rev.get("compound"),
+            conf_pct,
+            sentiment_distribution.get("pos_percent", 0),
+            sentiment_distribution.get("neg_percent", 0),
+            sentiment_distribution.get("neu_percent", 0)
+        ])
+
+    report_csv_base64 = output_csv.getvalue()
+
+
+
+    return {
+        "sentiment_distribution": sentiment_distribution,
+        "per_review_summary": per_review_summary,
+        "aspect_sentiment": aspect_sentiment,
+        "top_issues": top_issues,
+        "suggestions": suggestions,
+        "impact_score": impact_score,
+        "confidence_overview": confidence_overview,
+        "wordcloud_data": wordcloud_data,
+        "trend_over_time": trend_over_time,
+        "report_download": report_csv_base64
+    }
+
+# ----------------- Hugging Face Placeholder -----------------
+def analyze_reviews_huggingface(reviews, timestamps=None, cleaned_reviews=None, feedback_ids=None):
+    return analyze_reviews_vader(reviews, timestamps=timestamps, cleaned_reviews=cleaned_reviews, feedback_ids=feedback_ids)
+
+# ----------------- Transfer Learning Placeholder -----------------
+def analyze_reviews_tl_model(reviews, timestamps=None, cleaned_reviews=None, feedback_ids=None):
+    return analyze_reviews_vader(reviews, timestamps=timestamps, cleaned_reviews=cleaned_reviews, feedback_ids=feedback_ids)
+
+# ----------------- Dispatcher / Model Switch -----------------
+def analyze_reviews(reviews, model="vader", timestamps=None, cleaned_reviews=None, feedback_ids=None):
+    model = model.lower().strip()
+    if model == "vader":
+        return analyze_reviews_vader(reviews, timestamps=timestamps, cleaned_reviews=cleaned_reviews, feedback_ids=feedback_ids)
+    elif model == "huggingface":
+        return analyze_reviews_huggingface(reviews, timestamps=timestamps, cleaned_reviews=cleaned_reviews, feedback_ids=feedback_ids)
+    elif model == "tl_model":
+        return analyze_reviews_tl_model(reviews, timestamps=timestamps, cleaned_reviews=cleaned_reviews, feedback_ids=feedback_ids)
+    else:
+        raise ValueError("Unsupported model. Use 'vader', 'huggingface', or 'tl_model'.")
+
+
+
+
+
+
+----------------------------------------------ANS------------------------------------------------------------------
+
+
+Short and exact — two small replacements.
+
+**1) Replace the per-review scoring + `per_review_summary.append` block.**
+Find the block inside the `for idx, review in enumerate(reviews):` loop that starts with:
+
+```py
+scores = vader_analyzer.polarity_scores(text)
+compound = scores["compound"]
+compound_scores.append(compound)
+
+if compound >= 0.05:
+    sentiment = "pos"
+elif compound <= -0.05:
+    sentiment = "neg"
+else:
+    sentiment = "neu"
+...
+per_review_summary.append({
+    "id": idx + 1,
+    "feedback_id": feedback_id,
+    "text": review[:50] + ("..." if len(review) > 50 else ""),
+    "sentiment": sentiment,
+    "compound": compound,
+    "confidence": round(abs(compound), 4)  # store abs compound as 'confidence'
+})
+```
+
+**Replace it with (paste this exactly):**
+
+```py
+scores = vader_analyzer.polarity_scores(text)
+compound = scores["compound"]
+compound_scores.append(compound)
+
+# same label thresholds
+if compound >= 0.05:
+    sentiment = "pos"
+elif compound <= -0.05:
+    sentiment = "neg"
+else:
+    sentiment = "neu"
+sentiments_list.append(sentiment)
+sentiment_counts[sentiment] += 1
+
+# calibration: blend compound + pos/neg strengths + punctuation/emoji bonuses
+pos_s = scores.get("pos", 0.0)
+neg_s = scores.get("neg", 0.0)
+strength = max(pos_s, neg_s)  # 0..1
+
+punct_count = min(3, text.count("!") + text.count("?"))
+punct_bonus = punct_count * 0.03       # up to +0.09
+
+emoji_count = sum(1 for ch in text if ord(ch) > 127)   # quick emoji / non-ascii heuristic
+emoji_bonus = min(0.06, emoji_count * 0.02)            # up to +0.06
+
+calibrated = (abs(compound) * 0.6) + (strength * 0.3) + punct_bonus + emoji_bonus
+calibrated = max(0.0, min(1.0, calibrated))
+confidence_pct = int(round(calibrated * 100))
+
+per_review_summary.append({
+    "id": idx + 1,
+    "feedback_id": feedback_id,
+    "text": review[:50] + ("..." if len(review) > 50 else ""),
+    "sentiment": sentiment,
+    "compound": compound,
+    "confidence": confidence_pct   # percentage 0-100
+})
+```
+
+---
+
+**2) Replace CSV `conf_pct` computation when writing rows.**
+Find this line in the CSV-writing loop:
+
+```py
+conf_pct = round(abs(rev.get("compound", 0)) * 100, 2)
+```
+
+**Replace it with:**
+
+```py
+conf_pct = rev.get("confidence", 0)
+# or for 2-decimal float:
+# conf_pct = round(float(rev.get("confidence", 0)), 2)
+```
+
+---
+
+That's it — only these two replacements. After making them, restart the backend and test (Postman). This will raise many low-compound but clearly expressive texts above the 50% confidence threshold by blending extra signals.
+
+

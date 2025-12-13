@@ -1,0 +1,500 @@
+The frontend will completely based on Nextjs and tailwind css , for data base will use mongoDB, i will only create in nextjs frame work which use the javascript language, the also in app folder in it , all the components like the home page, upload page logi, etec . the foldr components itself contains some .jsx, components in components folder each page, i think a layout.js and pages.jsx components, 
+
+analyse this 
+message first 
+ok ok ok then listen i decided something, our python backend is completed with with vader, in frontend i wanted to give a choice to user to select a model, either vader, TL classification model that i will in google colab, and hugging face transformer which i will either link using api key or some code, i frontend what it will happen , first i will run npm run dev, then home page which will open then at the top there will option to login component by clicking it will performe as usual login or sign up as usual which is work on every single website , after that page will open to upload the input csv of feedback, but before uploading in the same uploading page in the top nav bar there will diffrent option like profile , choose a model in in there will three options , first the vader should be default selected the hugging face transformer model or tl dl model, so when ever the use change the model it should give a route requesto change the model, even though our backend is completely worked with vader it should by default should work with vader, if no model selected by user and in model selection option it should show at first the model selected by default in vader, and user can give the request in backend to change the model its there choice , after all this the final visuals should , and it should not only show the current visual but also the previous visual generate it is similar to the chatgpt which have a left sliding side navbar to the previous chats with the ability to change there title name so that we can identify it uniquely, exact same design and feature i want for my project. then a option in left sliding slide bar new visual click ing redirect to page were to again give a new file as input, then select the model if required and then same cycle finally in the top navbar of the a logout fuction for logout and return to home page. for now i do not want u to create diifrent models logic nor fortend but the logic ability to change model with diff routes but vader obviously because other models are yet implemented and we will implement it later.
+
+and the flowchart 
+Home page -> top navbar (if user is log out ) Login → Upload Page (Navbar: Profile, Model Select, Logout) 
+         → Upload CSV → Analyze with CURRENT_MODEL
+         → Visualization Saved → Left Sidebar shows previous visuals
+         → Sidebar Click → Load previous visualization
+         → Model Dropdown Change → POST /set_model → Change model for next analysis
+         → New Visual → Fresh input CSV
+
+so remeber my flow for the frontend 
+when i run npm run dev the home page will open , it will be the beautiful home page , then there will be a navbar on top showing a login function if user logout , once cliking there will open a dynamic animative createvive realistis , login registration form for both new user and existing users, for exting user it will check the data from the mongo db and update the the data for in mongodb collection , for this u have to give the specific routes and the models  logic code folder for complete everything also the env, ya env.local file any one, where i will store the database key or url to access, if download the mongodb in my laptop, after successfull login, the current will be home page the top navbar will be updated which will profile option a dropdown , contain the visual page and the upload page , for viewing the previous visuals which are store in database the user will able to to see, to create a new visual , the user have click to upload the csv file, in the upload page in some where top right there should a dropdown selection option to slect the model for analysis but by default as if user does not select it work with vader, and if user selected the model , then work according to postman logic that i have provided the below, and before analysis the whole backend codes of rotes.py, analyze.py, model_loader.py before doing anything , when user upload the csv file based the postman logic the backend logic will work it will return the data in form of this 
+{
+    "sentiment_distribution": {
+        "pos": 10,
+        "neg": 3,
+        "neu": 2,
+        "pos_percent": 66.67,
+        "neg_percent": 20.0,
+        "neu_percent": 13.33
+    },
+    "per_review_summary": [
+        {
+            "id": 1,
+            "text": "The product quality is excellent! I received exact...",
+            "sentiment": "pos",
+            "compound": 0.5719
+        },
+        {
+            "id": 2,
+            "text": "Delivery took too long. I waited almost 10 days ev...",
+            "sentiment": "neu",
+            "compound": 0.0
+        },
+        {
+            "id": 3,
+            "text": "Packaging was good, but the item was slightly dama...",
+            "sentiment": "pos",
+            "compound": 0.0754
+        },
+        {
+            "id": 4,
+            "text": "Customer service was very helpful and resolved my ...",
+            "sentiment": "pos",
+            "compound": 0.5423
+        },
+        {
+            "id": 5,
+            "text": "I love the design and build quality. Totally worth...",
+            "sentiment": "pos",
+            "compound": 0.7501
+        },
+        {
+            "id": 6,
+            "text": "The color was completely different from what I ord...",
+            "sentiment": "neu",
+            "compound": 0.0
+        },
+        {
+            "id": 7,
+            "text": "Average experience — not too bad, but nothing spec...",
+            "sentiment": "neg",
+            "compound": -0.6964
+        },
+        {
+            "id": 8,
+            "text": "The app interface is confusing and keeps crashing ...",
+            "sentiment": "neg",
+            "compound": -0.3182
+        },
+        {
+            "id": 9,
+            "text": "Super fast delivery! I got it the next day, impres...",
+            "sentiment": "pos",
+            "compound": 0.802
+        },
+        {
+            "id": 10,
+            "text": "Received a used product instead of a new one. Very...",
+            "sentiment": "neg",
+            "compound": -0.4767
+        },
+        {
+            "id": 11,
+            "text": "The sound quality is crystal clear, and battery li...",
+            "sentiment": "pos",
+            "compound": 0.7717
+        },
+        {
+            "id": 12,
+            "text": "Not satisfied. The material feels cheap and uncomf...",
+            "sentiment": "pos",
+            "compound": 0.0516
+        },
+        {
+            "id": 13,
+            "text": "Good value for money, but I wish it came with bett...",
+            "sentiment": "pos",
+            "compound": 0.872
+        },
+        {
+            "id": 14,
+            "text": "I had to contact support multiple times — they nev...",
+            "sentiment": "pos",
+            "compound": 0.4019
+        },
+        {
+            "id": 15,
+            "text": "Everything was perfect — delivery, packaging, prod...",
+            "sentiment": "pos",
+            "compound": 0.5719
+        }
+    ],
+    "aspect_sentiment": {
+        "delivery": {
+            "pos": 2,
+            "neu": 1,
+            "neg": 0
+        },
+        "quality": {
+            "pos": 5,
+            "neu": 0,
+            "neg": 1
+        },
+        "support": {
+            "pos": 2,
+            "neu": 0,
+            "neg": 0
+        },
+        "price": {
+            "pos": 3,
+            "neu": 0,
+            "neg": 0
+        },
+        "ux": {
+            "pos": 0,
+            "neu": 0,
+            "neg": 1
+        }
+    },
+    "top_issues": [
+        {
+            "keyword": "bad",
+            "count": 1,
+            "percent": 33.33
+        },
+        {
+            "keyword": "interface",
+            "count": 1,
+            "percent": 33.33
+        },
+        {
+            "keyword": "app",
+            "count": 1,
+            "percent": 33.33
+        }
+    ],
+    "suggestions": [
+        {
+            "aspect": "general",
+            "suggestion": "Maintain current performance.",
+            "priority": "low"
+        }
+    ],
+    "impact_score": 31.0,
+    "confidence_overview": {
+        "average": 0.2613,
+        "median": 0.4019,
+        "histogram": [
+            {
+                "range": "-1.0 to -0.5",
+                "count": 1
+            },
+            {
+                "range": "-0.5 to 0.0",
+                "count": 2
+            },
+            {
+                "range": "0.0 to 0.5",
+                "count": 5
+            },
+            {
+                "range": "0.5 to 1.0",
+                "count": 7
+            }
+        ]
+    },
+    "wordcloud_data": {
+        "positive": [
+            {
+                "word": "quality",
+                "count": 3
+            },
+            {
+                "word": "excellent",
+                "count": 1
+            },
+            {
+                "word": "good",
+                "count": 2
+            },
+            {
+                "word": "service",
+                "count": 1
+            },
+            {
+                "word": "customer",
+                "count": 1
+            },
+            {
+                "word": "delivery",
+                "count": 2
+            },
+            {
+                "word": "fast",
+                "count": 1
+            },
+            {
+                "word": "cheap",
+                "count": 1
+            },
+            {
+                "word": "value",
+                "count": 1
+            },
+            {
+                "word": "support",
+                "count": 1
+            },
+            {
+                "word": "price",
+                "count": 1
+            }
+        ],
+        "negative": [
+            {
+                "word": "bad",
+                "count": 1
+            },
+            {
+                "word": "interface",
+                "count": 1
+            },
+            {
+                "word": "app",
+                "count": 1
+            }
+        ]
+    },
+    "trend_over_time": [
+        {
+            "date": "2025-10-01",
+            "pos": 1,
+            "neg": 0,
+            "neu": 0
+        },
+        {
+            "date": "2025-10-02",
+            "pos": 0,
+            "neg": 0,
+            "neu": 1
+        },
+        {
+            "date": "2025-10-03",
+            "pos": 1,
+            "neg": 0,
+            "neu": 0
+        },
+        {
+            "date": "2025-10-04",
+            "pos": 1,
+            "neg": 0,
+            "neu": 0
+        },
+        {
+            "date": "2025-10-05",
+            "pos": 1,
+            "neg": 0,
+            "neu": 0
+        },
+        {
+            "date": "2025-10-06",
+            "pos": 0,
+            "neg": 0,
+            "neu": 1
+        },
+        {
+            "date": "2025-10-07",
+            "pos": 0,
+            "neg": 1,
+            "neu": 0
+        },
+        {
+            "date": "2025-10-08",
+            "pos": 0,
+            "neg": 1,
+            "neu": 0
+        },
+        {
+            "date": "2025-10-09",
+            "pos": 1,
+            "neg": 0,
+            "neu": 0
+        },
+        {
+            "date": "2025-10-10",
+            "pos": 0,
+            "neg": 1,
+            "neu": 0
+        },
+        {
+            "date": "2025-10-11",
+            "pos": 1,
+            "neg": 0,
+            "neu": 0
+        },
+        {
+            "date": "2025-10-12",
+            "pos": 1,
+            "neg": 0,
+            "neu": 0
+        },
+        {
+            "date": "2025-10-13",
+            "pos": 1,
+            "neg": 0,
+            "neu": 0
+        },
+        {
+            "date": "2025-10-14",
+            "pos": 1,
+            "neg": 0,
+            "neu": 0
+        },
+        {
+            "date": "2025-10-15",
+            "pos": 1,
+            "neg": 0,
+            "neu": 0
+        }
+    ],
+    "report_download": "UmV2aWV3IElELFRleHQsU2VudGltZW50LENvbXBvdW5kDQoxLFRoZSBwcm9kdWN0IHF1YWxpdHkgaXMgZXhjZWxsZW50ISBJIHJlY2VpdmVkIGV4YWN0Li4uLHBvcywwLjU3MTkNCjIsRGVsaXZlcnkgdG9vayB0b28gbG9uZy4gSSB3YWl0ZWQgYWxtb3N0IDEwIGRheXMgZXYuLi4sbmV1LDAuMA0KMywiUGFja2FnaW5nIHdhcyBnb29kLCBidXQgdGhlIGl0ZW0gd2FzIHNsaWdodGx5IGRhbWEuLi4iLHBvcywwLjA3NTQNCjQsQ3VzdG9tZXIgc2VydmljZSB3YXMgdmVyeSBoZWxwZnVsIGFuZCByZXNvbHZlZCBteSAuLi4scG9zLDAuNTQyMw0KNSxJIGxvdmUgdGhlIGRlc2lnbiBhbmQgYnVpbGQgcXVhbGl0eS4gVG90YWxseSB3b3J0aC4uLixwb3MsMC43NTAxDQo2LFRoZSBjb2xvciB3YXMgY29tcGxldGVseSBkaWZmZXJlbnQgZnJvbSB3aGF0IEkgb3JkLi4uLG5ldSwwLjANCjcsIkF2ZXJhZ2UgZXhwZXJpZW5jZSDigJQgbm90IHRvbyBiYWQsIGJ1dCBub3RoaW5nIHNwZWMuLi4iLG5lZywtMC42OTY0DQo4LFRoZSBhcHAgaW50ZXJmYWNlIGlzIGNvbmZ1c2luZyBhbmQga2VlcHMgY3Jhc2hpbmcgLi4uLG5lZywtMC4zMTgyDQo5LCJTdXBlciBmYXN0IGRlbGl2ZXJ5ISBJIGdvdCBpdCB0aGUgbmV4dCBkYXksIGltcHJlcy4uLiIscG9zLDAuODAyDQoxMCxSZWNlaXZlZCBhIHVzZWQgcHJvZHVjdCBpbnN0ZWFkIG9mIGEgbmV3IG9uZS4gVmVyeS4uLixuZWcsLTAuNDc2Nw0KMTEsIlRoZSBzb3VuZCBxdWFsaXR5IGlzIGNyeXN0YWwgY2xlYXIsIGFuZCBiYXR0ZXJ5IGxpLi4uIixwb3MsMC43NzE3DQoxMixOb3Qgc2F0aXNmaWVkLiBUaGUgbWF0ZXJpYWwgZmVlbHMgY2hlYXAgYW5kIHVuY29tZi4uLixwb3MsMC4wNTE2DQoxMywiR29vZCB2YWx1ZSBmb3IgbW9uZXksIGJ1dCBJIHdpc2ggaXQgY2FtZSB3aXRoIGJldHQuLi4iLHBvcywwLjg3Mg0KMTQsSSBoYWQgdG8gY29udGFjdCBzdXBwb3J0IG11bHRpcGxlIHRpbWVzIOKAlCB0aGV5IG5ldi4uLixwb3MsMC40MDE5DQoxNSwiRXZlcnl0aGluZyB3YXMgcGVyZmVjdCDigJQgZGVsaXZlcnksIHBhY2thZ2luZywgcHJvZC4uLiIscG9zLDAuNTcxOQ0K"
+}
+
+and this will store in the database , but in the frontend while all it will happening it should show the dynamic , relatic , creative innovative loaders, to show that that data is processing , and when the data is succesfull saved in the data base it should show success loader info that the visual are created kindlly click the visual, when we click the visuals, of the data that is received, in above format , since the data received first store in mongo db, so for that u have to create the rotes and models folders, according to it, in the visual page the there should dunaic realictic sliding left navbar that should all visual that have been created stored in the database, rember, do not cover the whole navbar with it in the left suppose 70% area should show the visual that have stored in the datbase should include a inner scroller to show all visual, means top visuals will, be the latest like Viual 1, Visual, 2, but thename should be dynamically change suppose , if the database of the visual is empty i have created the first visual the first visual will default called one, (but i should the to change the name of Like visual 1 by default given but user rename it to infosys visual, similar for all the visual), then i insert the another visual then visual 1 which was latest now become oldest visual 2 and the newly inserted visual becomes visual 1, in the 30% should cover with options any options that we will implement later, uh in visual page when it is showing a visual , in the bottom left , there should a button download csv 
+, for every received from visual from backend and stored in database there is a option 
+ "report_download": "UmV2aWV3IElELFRleHQsU2VudGltZW50LENvbXBvdW5kDQoxLFRoZSBwcm9kdWN0IHF1YWxpdHkgaXMgZXhjZWxsZW50ISBJIHJlY2VpdmVkIGV4YWN0Li4uLHBvcywwLjU3MTkNCjIsRGVsaXZlcnkgdG9vayB0b28gbG9uZy4gSSB3YWl0ZWQgYWxtb3N0IDEwIGRheXMgZXYuLi4sbmV1LDAuMA0KMywiUGFja2FnaW5nIHdhcyBnb29kLCBidXQgdGhlIGl0ZW0gd2FzIHNsaWdodGx5IGRhbWEuLi4iLHBvcywwLjA3NTQNCjQsQ3VzdG9tZXIgc2VydmljZSB3YXMgdmVyeSBoZWxwZnVsIGFuZCByZXNvbHZlZCBteSAuLi4scG9zLDAuNTQyMw0KNSxJIGxvdmUgdGhlIGRlc2lnbiBhbmQgYnVpbGQgcXVhbGl0eS4gVG90YWxseSB3b3J0aC4uLixwb3MsMC43NTAxDQo2LFRoZSBjb2xvciB3YXMgY29tcGxldGVseSBkaWZmZXJlbnQgZnJvbSB3aGF0IEkgb3JkLi4uLG5ldSwwLjANCjcsIkF2ZXJhZ2UgZXhwZXJpZW5jZSDigJQgbm90IHRvbyBiYWQsIGJ1dCBub3RoaW5nIHNwZWMuLi4iLG5lZywtMC42OTY0DQo4LFRoZSBhcHAgaW50ZXJmYWNlIGlzIGNvbmZ1c2luZyBhbmQga2VlcHMgY3Jhc2hpbmcgLi4uLG5lZywtMC4zMTgyDQo5LCJTdXBlciBmYXN0IGRlbGl2ZXJ5ISBJIGdvdCBpdCB0aGUgbmV4dCBkYXksIGltcHJlcy4uLiIscG9zLDAuODAyDQoxMCxSZWNlaXZlZCBhIHVzZWQgcHJvZHVjdCBpbnN0ZWFkIG9mIGEgbmV3IG9uZS4gVmVyeS4uLixuZWcsLTAuNDc2Nw0KMTEsIlRoZSBzb3VuZCBxdWFsaXR5IGlzIGNyeXN0YWwgY2xlYXIsIGFuZCBiYXR0ZXJ5IGxpLi4uIixwb3MsMC43NzE3DQoxMixOb3Qgc2F0aXNmaWVkLiBUaGUgbWF0ZXJpYWwgZmVlbHMgY2hlYXAgYW5kIHVuY29tZi4uLixwb3MsMC4wNTE2DQoxMywiR29vZCB2YWx1ZSBmb3IgbW9uZXksIGJ1dCBJIHdpc2ggaXQgY2FtZSB3aXRoIGJldHQuLi4iLHBvcywwLjg3Mg0KMTQsSSBoYWQgdG8gY29udGFjdCBzdXBwb3J0IG11bHRpcGxlIHRpbWVzIOKAlCB0aGV5IG5ldi4uLixwb3MsMC40MDE5DQoxNSwiRXZlcnl0aGluZyB3YXMgcGVyZmVjdCDigJQgZGVsaXZlcnksIHBhY2thZ2luZywgcHJvZC4uLiIscG9zLDAuNTcxOQ0K"
+
+for download the current visual in csv file, u have to go through the postman logic for that 
+postman logic 
+Short step-by-step (exact, minimal):
+
+1. **Start backend**
+
+   * `uvicorn main:app --reload` (or however you run it). Server on `http://localhost:8000`.
+
+2. **Check current model**
+
+   * GET `http://localhost:8000/feedback/get_model`
+   * Expect: `{"current_model":"vader"}`
+
+3. **(Optional) Change model**
+
+   * POST `http://localhost:8000/feedback/set_model`
+   * Body → JSON: `{ "model": "huggingface" }` (allowed: `"vader"`, `"huggingface"`, `"tl_model"`)
+   * Expect: `{"message":"Model switched to huggingface"}`
+
+4. **Prepare input**
+
+   * Option A — CSV: first column = review text, optional second column = `YYYY-MM-DD` timestamp. (Header row OK — it will be skipped.)
+   * Option B — TXT: plain lines, one review per line.
+   * Option C — JSON array: raw body `["review1", "review2", ...]`
+
+5. **Run analysis**
+
+   * POST `http://localhost:8000/feedback/analyze`
+   * If using file: choose `form-data` → key `file` → type `file` → attach `.csv` or `.txt`.
+   * If using JSON array: set `Body` → `raw` → `JSON` and paste array.
+   * **Important:** `analyze` uses the backend’s current model (set by `/set_model`). Do **not** expect a `?model=...` query param to be honored.
+
+6. **Expected JSON response (keys)**
+
+   * `sentiment_distribution` (pos/neg/neu counts + percentages)
+   * `per_review_summary` (list of `{id, text, sentiment, compound}`)
+   * `aspect_sentiment` (counts per aspect)
+   * `top_issues` (keywords with count & percent)
+   * `suggestions` (list of suggestions)
+   * `impact_score` (0–100)
+   * `confidence_overview` (average, median, histogram)
+   * `wordcloud_data` (positive & negative word frequencies)
+   * `trend_over_time` (date-wise pos/neg/neu)
+   * `report_download` (a **base64 CSV string** you can decode)
+
+   Example (short): `{"sentiment_distribution":{...},"per_review_summary":[...],"report_download":"UmV2aWV3..."}`
+
+7. **Download CSV report**
+
+   * POST `http://localhost:8000/feedback/report/download`
+   * Body JSON: `{ "report_base64": "<value from response.report_download>" }`
+   * Response: binary file stream — in Postman click **Save Response** to store as `.csv`.
+
+8. **Errors you'll see**
+
+   * `400` if no input provided or unsupported file type.
+   * `400` if `/set_model` receives invalid model name.
+
+That’s it — follow steps 2 → 5 to reproduce your previous output; `report_download` remains included as base64.
+now after successfully operation the user wish to log out, in profile, the  option there will a logout option, when click logout the user will , logout and return to the home page with previous navbar of staring for the login form , 
+
+the current folder structure will be in the form like this 
+frontend/
+│
+├── .env.local
+├── package.json
+├── tailwind.config.js
+├── postcss.config.js
+├── next.config.js
+│
+├── public/
+│   ├── logo.svg
+│   ├── loader.gif
+│   └── favicon.ico
+│
+├── app/
+│   ├── layout.jsx
+│   ├── globals.css
+│   ├── page.jsx                # Home Page
+│
+│   ├── login/                  # 🔐 Login & Registration page
+│   │   ├── page.jsx
+│   │   └── components/
+│   │       ├── LoginForm.jsx
+│   │       └── RegisterForm.jsx
+│
+│   ├── upload/                 # 📤 CSV upload + model selection
+│   │   ├── page.jsx
+│   │   └── components/
+│   │       ├── UploadForm.jsx
+│   │       ├── ModelSelector.jsx
+│   │       ├── UploadLoader.jsx
+│   │       └── UploadSuccess.jsx
+│
+│   ├── visuals/                # 📊 Visualization dashboard
+│   │   ├── page.jsx
+│   │   └── components/
+│   │       ├── VisualSidebar.jsx
+│   │       ├── VisualDisplay.jsx
+│   │       ├── RenameModal.jsx
+│   │       └── DownloadButton.jsx
+│
+│   ├── profile/                # 👤 User Profile page
+│   │   ├── page.jsx
+│   │   └── components/
+│   │       └── ProfileCard.jsx
+│
+│   ├── api/                    # ⚙️ API routes
+│   │   ├── auth/
+│   │   │   ├── login/route.js
+│   │   │   ├── register/route.js
+│   │   │   └── logout/route.js
+│   │   ├── model/
+│   │   │   └── set/route.js
+│   │   ├── upload/
+│   │   │   └── analyze/route.js
+│   │   ├── visuals/
+│   │   │   ├── getAll/route.js
+│   │   │   ├── getOne/[id]/route.js
+│   │   │   ├── rename/[id]/route.js
+│   │   │   └── delete/[id]/route.js
+│   │   └── mongo/
+│   │       └── connect.js
+│
+├── components/                 # 🌈 Global shared components
+│   ├── Navbar.jsx
+│   ├── Sidebar.jsx
+│   ├── Button.jsx
+│   ├── InputField.jsx
+│   ├── Dropdown.jsx
+│   ├── Loader.jsx
+│   └── Alert.jsx
+│
+├── lib/
+│   ├── api.js
+│   ├── auth.js
+│   ├── db.js
+│   ├── constants.js
+│   └── formatters.js
+│
+└── styles/
+    └── animations.css
+
+
+conclusion: I will create a frontend ui from the VO tool by vercel, i will only strong use Next.js with javascript no no typescript and for the styling i will use the Tailwind css only, nothing else, the colour should purple - violet vibrant combination, the app should be created using the V0 ai tools i have limited creadits, so u have to give in one shot, for creating the ui u have deeply go through all the postmann logic, the data we will receive from the baclkend, and folder structure espacially deeply, please remember, the routes of the of the folder structures , that we will create for login registration, sign in and the sending the csv file receiving the dat storing in mongoDB database rerieving the data from database showing the visual dowmloading the visual, u have keep in mind every routes and model logic that we will code while creating the vibrant realtic , effective innovation, from like a professional frontend developer, alsign 100% with routes models backend logic perfectly and accurately 
+
+and this is the end of my expalination
+

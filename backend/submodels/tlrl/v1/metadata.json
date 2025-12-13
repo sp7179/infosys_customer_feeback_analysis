@@ -1,0 +1,6 @@
+{
+    "version": "v1",
+    "accuracy": 1.0,
+    "f1": 1.0,
+    "n_samples": 285
+}

@@ -1,0 +1,336 @@
+Perfect — let’s bring **everything together** cleanly: full **backend + frontend + Postman testing** flow, including the **new visuals CRUD** and **logout** logic.
+
+Below is the **final full plan (complete working stack)** — short, step-by-step, exactly what to test and where to check.
+
+---
+
+# ⚙️ **BACKEND (FastAPI)**
+
+## ✅ 1. Environment
+
+Create `.env` in project root:
+
+```
+MONGODB_URI=mongodb://localhost:27017/Infosys
+```
+
+---
+
+## ✅ 2. Database helper — `app/db.py`
+
+```python
+from pymongo import MongoClient
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+MONGODB_URI = os.getenv("MONGODB_URI")
+client = MongoClient(MONGODB_URI)
+db = client["Infosys"]
+```
+
+---
+
+## ✅ 3. Update existing `/feedback/analyze` route
+
+Inside `feedback_routes.py` (where your `@router.post("/analyze")` is):
+
+**Add Mongo insert right after analysis:**
+
+```python
+from datetime import datetime
+from app.db import db
+
+@router.post("/analyze")
+async def analyze_feedback(file: UploadFile = None, reviews: list[str] = Body(default=None)):
+    # ... your existing preprocessing + model selection logic ...
+
+    result = final_output  # whatever dict you return
+
+    doc = {
+        "name": f"Visual_{int(datetime.utcnow().timestamp())}",
+        "model": CURRENT_MODEL,
+        "review_count": len(reviews) if reviews else 0,
+        "result": result,
+        "report_download": report_csv_base64,
+        "created_at": datetime.utcnow(),
+    }
+
+    res = db.analysis.insert_one(doc)
+    doc["_id"] = str(res.inserted_id)
+    return doc
+```
+
+✅ Now the analyze API **inserts + returns** saved record with `_id` (used as `visualId`).
+
+---
+
+## ✅ 4. Add visuals CRUD routes
+
+In same router file (`feedback_routes.py`):
+
+```python
+from bson import ObjectId
+from fastapi import HTTPException
+
+@router.get("/visuals")
+def get_visuals():
+    visuals = []
+    for doc in db.analysis.find().sort("created_at", -1):
+        doc["_id"] = str(doc["_id"])
+        visuals.append(doc)
+    return visuals
+
+
+@router.get("/visuals/{visual_id}")
+def get_visual(visual_id: str):
+    doc = db.analysis.find_one({"_id": ObjectId(visual_id)})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Visual not found")
+    doc["_id"] = str(doc["_id"])
+    return doc
+
+
+@router.post("/visuals/{visual_id}/rename")
+def rename_visual(visual_id: str, payload: dict):
+    new_name = payload.get("name")
+    db.analysis.update_one({"_id": ObjectId(visual_id)}, {"$set": {"name": new_name}})
+    return {"message": "Name updated", "new_name": new_name}
+
+
+@router.delete("/visuals/{visual_id}")
+def delete_visual(visual_id: str):
+    db.analysis.delete_one({"_id": ObjectId(visual_id)})
+    return {"message": "Visual deleted"}
+
+
+@router.get("/visuals/{visual_id}/download")
+def download_visual(visual_id: str):
+    doc = db.analysis.find_one({"_id": ObjectId(visual_id)})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Visual not found")
+    return {"report_download": doc.get("report_download")}
+```
+
+---
+
+# 🧪 **POSTMAN TESTS**
+
+Backend runs at → `http://localhost:8000`
+
+---
+
+### 1️⃣ Get current model
+
+```
+GET http://localhost:8000/feedback/get_model
+```
+
+✅ Expect → `{"current_model":"vader"}`
+
+---
+
+### 2️⃣ Change model (optional)
+
+```
+POST http://localhost:8000/feedback/set_model
+Body → JSON: { "model": "huggingface" }
+```
+
+✅ Expect → `{"message":"Model switched to huggingface"}`
+
+---
+
+### 3️⃣ Run analyze (insert new record)
+
+**Option A:** `form-data`
+
+* key: `file` → type: file → attach `.csv` or `.txt`
+
+**Option B:** `raw JSON`
+
+```json
+["This product is great!", "Service was bad."]
+```
+
+```
+POST http://localhost:8000/feedback/analyze
+```
+
+✅ Expect:
+
+```json
+{
+  "_id": "6716f6a3e31...",
+  "name": "Visual_172958...",
+  "result": { ... },
+  "report_download": "UmV2aWV3..."
+}
+```
+
+→ confirms inserted into MongoDB.
+
+---
+
+### 4️⃣ List all visuals
+
+```
+GET http://localhost:8000/feedback/visuals
+```
+
+✅ Expect array sorted DESC by created time.
+
+---
+
+### 5️⃣ Get one visual
+
+```
+GET http://localhost:8000/feedback/visuals/<_id>
+```
+
+---
+
+### 6️⃣ Rename visual
+
+```
+POST http://localhost:8000/feedback/visuals/<_id>/rename
+Body → JSON: { "name": "My Renamed Report" }
+```
+
+✅ Expect: `{ "message": "Name updated", "new_name": "My Renamed Report" }`
+
+---
+
+### 7️⃣ Delete visual
+
+```
+DELETE http://localhost:8000/feedback/visuals/<_id>
+```
+
+✅ Expect: `{ "message": "Visual deleted" }`
+
+---
+
+### 8️⃣ Download CSV (base64)
+
+```
+GET http://localhost:8000/feedback/visuals/<_id>/download
+```
+
+✅ Expect: `{ "report_download": "UmV2aWV3..." }`
+
+---
+
+# 💻 **FRONTEND (Next.js 14+)**
+
+All proxy routes under `/app/api/visuals/...` mirror backend.
+
+---
+
+### ✅ `/app/api/upload/analyze/route.js`
+
+```js
+export async function POST(request) {
+  const body = await request.formData();
+  const res = await fetch("http://localhost:8000/feedback/analyze", {
+    method: "POST",
+    body,
+  });
+  const data = await res.json();
+  return Response.json(data);
+}
+```
+
+→ returns saved `doc` with `_id`.
+
+---
+
+### ✅ Visuals API proxies
+
+`/app/api/visuals/getAll/route.js`
+
+```js
+export async function GET() {
+  const res = await fetch("http://localhost:8000/feedback/visuals");
+  return Response.json(await res.json());
+}
+```
+
+`/app/api/visuals/getOne/[id]/route.js`
+
+```js
+export async function GET(_, { params }) {
+  const res = await fetch(`http://localhost:8000/feedback/visuals/${params.id}`);
+  return Response.json(await res.json());
+}
+```
+
+`/app/api/visuals/rename/[id]/route.js`
+
+```js
+export async function POST(request, { params }) {
+  const body = await request.json();
+  const res = await fetch(`http://localhost:8000/feedback/visuals/${params.id}/rename`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return Response.json(await res.json());
+}
+```
+
+`/app/api/visuals/delete/[id]/route.js`
+
+```js
+export async function DELETE(_, { params }) {
+  const res = await fetch(`http://localhost:8000/feedback/visuals/${params.id}`, { method: "DELETE" });
+  return Response.json(await res.json());
+}
+```
+
+---
+
+# 👤 **Logout flow**
+
+### ✅ Backend
+
+If using JWT:
+
+```python
+@router.post("/auth/logout")
+def logout_user():
+    response = JSONResponse({"message": "Logged out"})
+    response.delete_cookie("access_token")
+    return response
+```
+
+### ✅ Frontend (Profile page)
+
+```js
+const handleLogout = async () => {
+  await fetch("/api/auth/logout", { method: "POST" });
+  router.push("/");
+};
+```
+
+Navbar returns to default (login/register view).
+
+---
+
+# ✅ **POSTMAN FINAL CHECKLIST**
+
+| API            | Method | URL                               | Expect               |
+| -------------- | ------ | --------------------------------- | -------------------- |
+| Get Model      | GET    | `/feedback/get_model`             | Current model name   |
+| Set Model      | POST   | `/feedback/set_model`             | Message              |
+| Analyze        | POST   | `/feedback/analyze`               | Returns saved record |
+| Get Visuals    | GET    | `/feedback/visuals`               | List of records      |
+| Get One Visual | GET    | `/feedback/visuals/{id}`          | Single doc           |
+| Rename         | POST   | `/feedback/visuals/{id}/rename`   | Confirmation         |
+| Delete         | DELETE | `/feedback/visuals/{id}`          | Message              |
+| Download       | GET    | `/feedback/visuals/{id}/download` | Base64 CSV           |
+| Logout         | POST   | `/auth/logout`                    | “Logged out”         |
+
+---
+
+Would you like me to generate the **complete backend `feedback_routes.py` file (ready-to-run)** with all these routes combined and ObjectId-safe conversion?

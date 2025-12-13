@@ -1,0 +1,216 @@
+TOP_N_ISSUES = 5  # Number of top negative keywords to return
+
+
+ISSUE_CLUSTERS = {
+    "App Crashes": ["crash", "freeze", "stuck", "hang", "error", "bug"],
+    "Slow Performance": ["slow", "lag", "delay", "unresponsive"],
+    "Bad UI/Navigation": ["interface", "design", "layout", "navigation", "confusing"],
+    "High Pricing": ["expensive", "overpriced", "costly"],
+    "Poor Customer Support": ["support", "response", "help", "agent", "customer care"],
+    "Delivery Problems": ["late", "delay", "shipment", "arrival"],
+    "Product Quality Issues": ["broken", "defect", "faulty", "damaged"],
+}
+
+# ----------------- Aspect / Keyword Setup (enhanced 16 categories) -----------------
+ASPECT_KEYWORDS = {
+    "delivery": ["delivery", "ship", "shipment", "arrival", "late", "delay", "fast", "slow"],
+    "product_quality": ["quality", "defect", "broken", "durable", "material", "build", "faulty"],
+    "customer_support": ["support", "service", "help", "response", "agent", "customer care"],
+    "pricing": ["price", "cost", "expensive", "cheap", "value", "pricing", "overpriced"],
+    "ux_ui": ["app", "website", "interface", "navigation", "ux", "ui", "layout"],
+    "performance": ["performance", "speed", "lag", "freeze", "slow", "responsive"],
+    "packaging": ["package", "packaging", "box", "sealed", "wrap"],
+    "returns_refund": ["return", "refund", "exchange", "replace", "warranty"],
+    "features": ["feature", "functionality", "option", "capability"],
+    "compatibility": ["compatible", "compatibility", "integration", "works with"],
+    "reliability": ["reliable", "stability", "crash", "bug", "consistent"],
+    "trust_security": ["secure", "security", "privacy", "trust", "fraud", "safe"],
+    "documentation": ["documentation", "manual", "guide", "instructions"],
+    "installation_onboarding": ["installation", "setup", "onboarding", "getting started"],
+    "availability_stock": ["stock", "available", "availability", "out of stock", "preorder"],
+    "visual_design": ["design", "look", "visual", "aesthetic", "theme", "colors"]
+}
+
+# Minimal suggestion map aligned to the 16 aspects
+SUGGESTION_MAP = {
+    "delivery": "Improve delivery timelines, provide live tracking and proactive updates.",
+    "product_quality": "Strengthen QC checks, implement stricter defect screening and testing.",
+    "customer_support": "Increase support staffing, SLA enforcement and agent training.",
+    "pricing": "Review pricing tiers, introduce promotions and clearer value messaging.",
+    "ux_ui": "Revamp UI flows, reduce friction and simplify navigation for key paths.",
+    "performance": "Optimize backend endpoints and client rendering to reduce lag.",
+    "packaging": "Enhance packaging material & design to avoid damage and improve unboxing.",
+    "returns_refund": "Streamline return/refund policy and automate common refunds.",
+    "features": "Prioritize high-demand features and deprecate unused/buggy options.",
+    "compatibility": "Expand integrations and compatibility testing across key platforms.",
+    "reliability": "Stabilize releases, add monitoring and automated rollback on failures.",
+    "trust_security": "Improve payment security, transparency and privacy controls.",
+    "documentation": "Create clear guides, examples and quick-start docs for common flows.",
+    "installation_onboarding": "Simplify setup; add guided onboarding & tooltips for first-time users.",
+    "availability_stock": "Improve inventory sync and notification for stock shortages.",
+    "visual_design": "Harmonize visual language and enhance aesthetics across screens."
+}
+
+# ----------------- Advanced suggestion knowledge-base (rich, pluggable) -----------------
+ADVANCED_SUGGESTION_DATA = {
+    "delivery": {
+        "root_cause": "Logistics delays and poor tracking visibility lead to customer dissatisfaction.",
+        "action_steps": [
+            "Integrate real-time GPS-based tracking APIs",
+            "Automate delay-notification systems to customers",
+            "Partner with regional express logistics for last-mile",
+            "Introduce micro-fulfillment centers for hot-skew items"
+        ],
+        "impact_gain": 22
+    },
+    "product_quality": {
+        "root_cause": "Recurring defects and inconsistent material quality reported by users.",
+        "action_steps": [
+            "Introduce multi-stage QC checkpoints pre-dispatch",
+            "Increase supplier audits and sample testing",
+            "Adopt automated defect detection (CV) on production line",
+            "Implement batch recall & traceability for faulty SKUs"
+        ],
+        "impact_gain": 28
+    },
+    "customer_support": {
+        "root_cause": "Slow response and inconsistent resolutions from support agents.",
+        "action_steps": [
+            "Deploy AI intent classification to auto-route tickets",
+            "Standardize agent playbooks and escalation rules",
+            "Implement SLA monitoring and dashboards",
+            "Provide a multilingual chatbot for common requests"
+        ],
+        "impact_gain": 25
+    },
+    "pricing": {
+        "root_cause": "Perceived poor value vs competitors and confusing price signals.",
+        "action_steps": [
+            "Introduce transparent pricing comparison & bundles",
+            "Deploy demand-driven promotions & loyalty rewards",
+            "Run competitor price monitoring and alignment",
+            "Offer time-limited value packs"
+        ],
+        "impact_gain": 18
+    },
+    "ux_ui": {
+        "root_cause": "Confusing navigation, inconsistent components and poor accessibility.",
+        "action_steps": [
+            "Redesign navigation with clear hierarchy and CTAs",
+            "Add onboarding walkthroughs and contextual tooltips",
+            "Harmonize design tokens and spacing scale",
+            "Improve accessibility: color contrast, keyboard nav, ARIA labels"
+        ],
+        "impact_gain": 20
+    },
+    "performance": {
+        "root_cause": "Unoptimized assets and API latency causing slow UX.",
+        "action_steps": [
+            "Enable lazy-loading and code-splitting for heavy components",
+            "Add server-side caching & CDN for static assets",
+            "Optimize critical render path and reduce JS bundle size",
+            "Monitor slow endpoints and prioritize backend perf fixes"
+        ],
+        "impact_gain": 23
+    },
+    "packaging": {
+        "root_cause": "Weak packaging causing damage during transit.",
+        "action_steps": [
+            "Use shock-proof & right-sized packaging for fragile items",
+            "Introduce tamper-evident seals and padding standards",
+            "Train fulfilment teams on packing best-practices",
+            "Add simple packing checklists for high-risk SKUs"
+        ],
+        "impact_gain": 15
+    },
+    "returns_refund": {
+        "root_cause": "Complex returns flow and slow refund turn-around.",
+        "action_steps": [
+            "Implement 1-click returns for common cases",
+            "Automate refund approvals for low-risk items",
+            "Add return pickup tracking and ETA for customers",
+            "Reduce overall refund settlement time"
+        ],
+        "impact_gain": 21
+    },
+    "features": {
+        "root_cause": "Missing or poorly implemented features that users ask for.",
+        "action_steps": [
+            "Prioritize high-demand features in product roadmap",
+            "Retire legacy features causing complexity",
+            "Roll out features behind feature flags and A/B test",
+            "Collect in-app feedback for feature improvements"
+        ],
+        "impact_gain": 17
+    },
+    "compatibility": {
+        "root_cause": "Compatibility gaps across devices or integrations.",
+        "action_steps": [
+            "Expand cross-platform testing matrix (devices/OS)",
+            "Harden API contracts and versioning",
+            "Document integration examples and SDKs",
+            "Add compatibility mode or fallback behaviors"
+        ],
+        "impact_gain": 16
+    },
+    "reliability": {
+        "root_cause": "Unstable releases and regressions causing crashes/failures.",
+        "action_steps": [
+            "Implement real-time error monitoring (Sentry/NewRelic)",
+            "Improve QA regression tests and nightly smoke suites",
+            "Add automatic rollbacks and safer deployment strategies",
+            "Strengthen CI/CD gates and monitoring alerts"
+        ],
+        "impact_gain": 27
+    },
+    "trust_security": {
+        "root_cause": "User concerns about data privacy, payment security and fraud.",
+        "action_steps": [
+            "Enable 2FA and strengthen authentication",
+            "Encrypt sensitive data at rest and in transit",
+            "Publish a clear privacy dashboard and incident policy",
+            "Conduct periodic pen-tests and third-party audits"
+        ],
+        "impact_gain": 30
+    },
+    "documentation": {
+        "root_cause": "Users lack accessible, actionable documentation and guides.",
+        "action_steps": [
+            "Create interactive quick-start guides and code samples",
+            "Produce short how-to videos for common flows",
+            "Maintain a searchable FAQ and community forum",
+            "Collect doc feedback and iterate frequently"
+        ],
+        "impact_gain": 14
+    },
+    "installation_onboarding": {
+        "root_cause": "Complex setup flow and unclear onboarding steps.",
+        "action_steps": [
+            "Provide guided setup with validation checks",
+            "Auto-detect common setup issues and suggest fixes",
+            "Simplify onboarding to 2–3 essential steps",
+            "Offer 'quick start' mode for experienced users"
+        ],
+        "impact_gain": 19
+    },
+    "availability_stock": {
+        "root_cause": "Out-of-stock items and delayed stock updates.",
+        "action_steps": [
+            "Implement near-real-time inventory sync (short polling)",
+            "Provide waitlist notifications and pre-order options",
+            "Improve demand forecasting for hot-sellers",
+            "Add buffer stock for high-turnover SKUs"
+        ],
+        "impact_gain": 15
+    },
+    "visual_design": {
+        "root_cause": "Inconsistent aesthetics & outdated visual language.",
+        "action_steps": [
+            "Adopt a modern design system and tokens",
+            "Improve iconography, typography and color harmony",
+            "Standardize spacing scale and component library",
+            "Introduce polished animations & microinteractions"
+        ],
+        "impact_gain": 13
+    },
+}

@@ -1,0 +1,108 @@
+**OK KAKARROT — VERY VERY SHORT.**
+Here is the **FINAL CLEAN LIST**:
+
+---
+
+# ✅ **1) ROUTES YOU ACTUALLY CREATED IN BACKEND**
+
+(These exist in your file.)
+
+### ✔ Users
+
+* **GET /admin/users**
+* **DELETE /admin/users/{id}**
+
+### ✔ Models
+
+* **GET /admin/models/jobs**
+
+### ✔ Datasets
+
+* **GET /admin/datasets**
+
+### ✔ Logs
+
+* **GET /admin/logs**
+
+### ✔ Config Editor
+
+* **GET /admin/config**
+* **POST /admin/config**
+* **PUT /admin/config/{item_id}**
+* **DELETE /admin/config/{item_id}**
+
+### ✔ Settings
+
+* **PUT /admin/admins/change-password**
+
+### ✔ Login
+
+* **POST /admin/login**
+
+---
+
+# ❌ **2) ROUTES THE FRONTEND IS CALLING BUT YOU DID *NOT* CREATE**
+
+### ❌ Users
+
+* `/admin/users/count`
+* `/admin/users/history`
+
+### ❌ Models
+
+* `/admin/models`  *(frontend expects this, but you only made `/models/jobs`)*
+* `/admin/models/history`
+
+### ❌ No route for:
+
+* `/admin/models/logs`
+* `/admin/models/status/{jobid}`
+* `/admin/datasets/{id}`
+
+---
+
+# ⚠️ **3) ROUTES YOU CREATED BUT FRONTEND IS **NOT** USING PROPERLY**
+
+### ⚠️ `GET /admin/users`
+
+Frontend expects shape:
+
+```js
+users.users.length
+```
+
+Your backend returns different shape → mismatch.
+
+### ⚠️ `GET /admin/models/jobs`
+
+Frontend calls:
+`/api/admin/models` → expects `models.jobs`
+
+Your backend returns different naming.
+
+### ⚠️ `PUT /admin/admins/change-password`
+
+Frontend calls:
+`/api/admin/settings`
+
+Proxy mismatch.
+
+---
+
+# ⭐ **4) FINAL ONE-LINE TRUTH**
+
+**Frontend uses many routes you NEVER created + it uses WRONG names for routes you DID create.**
+
+This is why you get 404 + undefined.
+
+---
+
+If you want, I will now generate:
+
+👉 **A PERFECT MATCH ROUTE TABLE** (backend → frontend)
+OR
+👉 **Fix frontend to match backend**
+OR
+👉 **Fix backend to match frontend**
+
+Say **“match them”** for full fix.

@@ -1,0 +1,355 @@
+Here is the **updated folder structure ONLY** (backend + frontend) with your new **Active Learning** module added cleanly and separately.
+
+---
+
+# ⭐ UPDATED BACKEND FOLDER STRUCTURE
+
+(Only showing new + existing files clearly)
+
+```
+backend/
+│   analyze.py
+│   db.py
+│   model_loader.py
+│   preprocess.py
+│   routes.py
+│   __init__.py
+│
+├── active_learning/                <-- NEW MODULE
+│     │   active_learning.py        <-- main API handlers
+│     │   model_manager.py          <-- load/predict/save models
+│     │   retrain_worker.py         <-- retrain logic
+│     │   schemas.py                <-- request/response models
+│     │   utils.py                  <-- helpers (csv validate, metrics)
+│
+├── submodels/                      <-- NEW (stores trained models)
+│     └── tlrl/
+│          └── v1/
+│               │   model.joblib
+│               │   metadata.json
+│          └── v2/
+│               ...
+│
+├── uploads/
+│     └── active/                   <-- NEW (for csv uploads)
+│           └── *.csv
+│
+├── retrain_logs/                   <-- NEW (optional logs)
+│       └── job_xx.log
+│
+└── __pycache__/
+```
+
+---
+
+# ⭐ UPDATED FRONTEND FOLDER STRUCTURE
+
+(New **active-learning** feature is completely separate)
+
+```
+frontend/
+│   globals.css
+│   layout.js
+│   page.jsx
+│
+├── active-learning/                 <-- NEW PAGE
+│     │   page.jsx                   <-- main page UI
+│     │
+│     └── components/                <-- NEW COMPONENTS
+│           │   ActiveIntro.jsx
+│           │   ActiveDashboard.jsx
+│           │   FeedbackBox.jsx
+│           │   ConfidenceGauge.jsx
+│           │   ClassPercents.jsx
+│           │   PerformanceCharts.jsx
+│           │   UploadRetrain.jsx
+│           │   RetrainModal.jsx
+│           │   VersionHistory.jsx
+│
+├── api/
+│    ├── active-learning/            <-- NEW API ROUTES (Frontend → Backend)
+│    │     │
+│    │     ├── predict/route.js
+│    │     ├── feedback/route.js
+│    │     ├── upload/route.js
+│    │     ├── retrain/route.js
+│    │     └── status/[jobid]/route.js
+│    │
+│    ├── auth/...
+│    ├── model/...
+│    ├── mongo/...
+│    ├── profile/...
+│    ├── upload/...
+│    └── visuals/...
+│
+├── login/
+│── profile/
+│── upload/
+└── visuals/
+```
+
+---
+
+# ✔ FINAL NOTES
+
+* **Active Learning** is fully separated — not mixed with `/visuals/`.
+* Backend has a clean module `/active_learning/`.
+* Frontend has an entire section `/active-learning/` with independent components and API routes.
+* This structure supports model versioning, retraining, feedback, and performance visuals safely.
+
+---
+
+If this folder structure is approved, say **“now start backend APIs”** or **“start frontend components”** or **“start colab model training”**.
+
+
+
+
+
+
+
+
+
+Here is the **final simple + short approach** in easy words:
+
+---
+
+# ⭐ FINAL APPROACH (Very Simple)
+
+### **1️⃣ Model**
+
+* First train your TL/RL model in **Google Colab**.
+* Download the model file and put it in backend → **/submodels/tlrl/v1/**.
+* Backend will later retrain this same model using new data.
+
+---
+
+# **2️⃣ Backend**
+
+Create one new backend module called **active_learning** for everything.
+
+It will do:
+
+* Predict text → give **pos/neg/neu**, **percentages**, **confidence**.
+* Save each prediction in MongoDB (append only).
+* Accept CSV upload for retraining.
+* Retrain the saved model → create **new version** (v2, v3…).
+* Save metrics & model versions in MongoDB.
+* Always return **latest results** to frontend.
+
+New backend files:
+
+* `active_learning.py`
+* `model_manager.py`
+* `retrain_worker.py`
+* `/submodels/tlrl/v*/` folders
+* `/uploads/active/` for CSVs
+
+---
+
+# **3️⃣ Database (Mongo)**
+
+Store data in simple append-only collections:
+
+* `feedbacks` – all predictions & corrections
+* `models` – each model version
+* `metrics_history` – performance charts
+* `datasets` – uploaded CSVs
+* `retrain_jobs` – retrain status
+
+---
+
+# **4️⃣ Frontend**
+
+Make a **new separate section**:
+
+### `/active-learning` page
+
+This page shows:
+
+1. Small intro + “Start”.
+2. **Feedback Box** → user enters text.
+3. Shows:
+
+   * classification
+   * % bar
+   * confidence gauge
+4. Button to correct output.
+5. Button to upload CSV → retrain model.
+6. Beautiful charts showing **latest model performance**.
+
+All UI components live inside:
+
+```
+/active-learning/components/
+```
+
+---
+
+# **5️⃣ Flow**
+
+User gives text →
+Backend predicts →
+DB saves →
+Frontend shows visuals →
+User uploads CSV or corrects →
+Backend retrains →
+New model version saved →
+Frontend shows updated visuals.
+
+---
+
+If this is clear, say **"start backend"** or **"start frontend"** or **"start colab"**.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Here is the **FINAL UPDATED POSTMAN TEST GUIDE** (super simple),
+100% correct **for your current backend**, where the router path is:
+
+```
+/feedback/active/...
+```
+
+Because your `routes.py` has:
+
+```
+router = APIRouter(prefix="/feedback")
+router.include_router(active_router)   # active_router has prefix="/active"
+```
+
+So Postman must use:
+
+```
+/feedback/active/...
+```
+
+---
+
+# ⭐ FINAL UPDATED POSTMAN ENDPOINTS
+
+Base URL:
+
+```
+http://127.0.0.1:8000
+```
+
+Active learning endpoints:
+
+```
+/feedback/active/predict
+/feedback/active/upload
+/feedback/active/retrain
+/feedback/active/status/{jobid}
+/feedback/active/latest_metrics
+```
+
+---
+
+# ✅ 1) Test **Predict**
+
+**POST**
+
+```
+http://127.0.0.1:8000/feedback/active/predict
+```
+
+Body → raw → JSON:
+
+```json
+{
+  "text": "I love this app!"
+}
+```
+
+---
+
+# ✅ 2) Test **Upload CSV**
+
+**POST**
+
+```
+http://127.0.0.1:8000/feedback/active/upload
+```
+
+Body → form-data:
+
+| Key  | Type | Value             |
+| ---- | ---- | ----------------- |
+| file | File | (choose your CSV) |
+
+You get:
+
+```json
+{
+  "dataset_id": "<id>",
+  "filename": "yourfile.csv",
+  "rows": 120
+}
+```
+
+---
+
+# ✅ 3) Test **Retrain**
+
+**POST**
+
+```
+http://127.0.0.1:8000/feedback/active/retrain
+```
+
+Body → raw → JSON:
+
+```json
+{
+  "dataset_id": "<dataset_id_from_upload>",
+  "include_feedbacks": true,
+  "base_model_version": "v1"
+}
+```
+
+---
+
+# ✅ 4) Poll **Job Status**
+
+**GET**
+
+```
+http://127.0.0.1:8000/feedback/active/status/job_xxxxxx
+```
+
+---
+
+# ✅ 5) Get **Latest Metrics**
+
+**GET**
+
+```
+http://127.0.0.1:8000/feedback/active/latest_metrics
+```
+
+---
+
+# ⭐ Summary (super short)
+
+| Feature        | Correct Postman URL               |
+| -------------- | --------------------------------- |
+| Predict        | `/feedback/active/predict`        |
+| Upload CSV     | `/feedback/active/upload`         |
+| Retrain        | `/feedback/active/retrain`        |
+| Job Status     | `/feedback/active/status/{jobid}` |
+| Latest Metrics | `/feedback/active/latest_metrics` |
+
+---
+
+If you want, I can generate a **Postman Collection JSON** you can import directly — just tell me **“give Postman collection”**.

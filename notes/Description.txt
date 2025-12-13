@@ -1,0 +1,15 @@
+ok listen what it is my project
+i have taken part in the internship , and i have to build a review extraction from customer feedback , 
+what are the goal, the model should analysisi the reviews and provide, sentiment analysis whether positive negative or neutral, also some graphical visualisation, and the improvement the company have tomake for the services to the customer, etc etc features (Here features does not means the points, but way the results represent visually, for example 
+representing pos, neg or neu, another feature charts or graphs, notations, suggestion for improvement in services everything visually) , total i have include 10 features which act as a result of the review extraction that will help the company , 
+I have decided to implement the front end with next js and backend for python , 
+what i am decided to 
+1. to build the backend in python i may require many libraries, like nltk, spacy or bils, but i could not it in vs code in windows, as it is saying there is some error u have to download the vs code installer c/c++ tools which is 6GB, which i do not want 
+a) so is there any other way way to do complete backend from google colab and send results to show in frontend nextjs using the fastapi, or any flask logic
+b) or u are going to create some model.p, in vs code logally to direct results , will create many models 
+like model.p, because i do not want to download the 6GB microsoft c/c++ tools, in system 
+c) i will use datsets, from kaggle so suggest some of it, 
+d) if you using the logic of building google colab then i want to show each feature prediction in the real for each feedbacks in the next js, frontend 
+what i want the is , there should upload option a text file it contain the 10 or more feedbacks, the model should the return the analysis of the feeback in the form of the 10 features that we will implement the next js frontend should contain a home page, login using clerk, page to upload the file, main dashboard to shows features , 
+if u think, huuging face vader and Roberts model can do something in the project to make task simpler then please tell then please tell how, 
+I do not want to make the project complex, but it should be very very very effective, so provide procedure for making the ml logic easily integrated with backend and frontend 

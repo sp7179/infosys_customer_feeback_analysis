@@ -1,0 +1,6 @@
+for starting the main.py model :-    uvicorn main:app --
+
+
+Later, you can integrate the ML model (TF-IDF + LR) via model_loader and support model=ml in /analyze.
+
+tfidf_lr_joblib.pkl
