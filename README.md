@@ -140,7 +140,7 @@ The application is deployed on cloud platforms and can be accessed via the follo
   *Provides the user interface for feedback submission, analytics, and interactive visual dashboards.*
 
 - **Backend (Render):**  
-  https://infosys-feedback-backend.onrender.com  
+  https://shourish365-infosys-feedback-backend.hf.space  
   *Exposes RESTful APIs for data ingestion, sentiment analysis, active learning workflows, model management, and database operations.*
 
 The frontend and backend communicate securely through API-based integration, enabling real-time processing, visualization, and continuous model updates.
