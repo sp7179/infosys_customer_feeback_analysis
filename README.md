@@ -131,6 +131,22 @@ These models are integrated into an **active learning framework** to support con
 
 ---
 
+## 🚀 Live Deployment
+
+The application is deployed on cloud platforms and can be accessed via the following links:
+
+- **Frontend (Vercel):**  
+  https://infosys-feedback-frontend.vercel.app/  
+  *Provides the user interface for feedback submission, analytics, and interactive visual dashboards.*
+
+- **Backend (Render):**  
+  https://infosys-feedback-backend.onrender.com  
+  *Exposes RESTful APIs for data ingestion, sentiment analysis, active learning workflows, model management, and database operations.*
+
+The frontend and backend communicate securely through API-based integration, enabling real-time processing, visualization, and continuous model updates.
+
+---
+
 ## 📄 License
 
 This project is licensed under the **MIT License**.
